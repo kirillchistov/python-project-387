@@ -55,8 +55,7 @@ ci: запуск e2e в GitHub Actions
 
 ```bash
 # Терминал 1 — API (порт 5001)
-cd backend && npm install && npm start
-# или с автоперезапуском: npm run dev
+cd backend && uv sync && uv run uvicorn app.main:app --reload --port 5001
 # переменные (опционально): PORT, OWNER_EMAIL, OWNER_PASSWORD, OWNER_NAME,
 # OWNER_SLUG, OWNER_TIMEZONE, DATABASE_PATH, PUBLIC_BASE_URL
 
@@ -69,9 +68,16 @@ UI: http://localhost:5173 · публичная страница сида: `/u/k
 
 Вместо бэкенда для работы только над фронтом: из корня `npm run api:mock` (Prism на 5001).
 
+Бэкенд на Python (FastAPI + SQLAlchemy + Alembic, `uv`) — миграции и сид
+демо-владельца применяются автоматически при старте (`uvicorn app.main:app`),
+руками `alembic upgrade head` гонять не нужно. Pydantic-модели запросов/ответов
+в `backend/app/api/schemas/generated.py` **не редактируются руками** — как и
+`docs/api/openapi.yaml`, это генерируемый артефакт (`backend/scripts/generate_schemas.sh`
+из скомпилированного контракта; CI проверяет актуальность так же, как для `openapi.yaml`).
+
 ## Проверки перед коммитом
 
-- `cd backend && npm test` — бизнес-правила API;
+- `cd backend && uv run pytest && uv run ruff check .` — бизнес-правила API и линт;
 - `cd frontend && npm run lint && npm run build` — линт и типы фронтенда;
 - `cd e2e && npm test` — интеграционные сценарии (нужен установленный
   Chromium: `npx playwright install chromium`).

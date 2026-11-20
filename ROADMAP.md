@@ -25,6 +25,27 @@
 
 ---
 
+## Порт бэкенда на Python (15.09.2026)
+
+`backend/` переписан с Fastify (JS) на FastAPI + SQLAlchemy 2.0 + Alembic
+(`uv`), контракт и продукт не менялись — см.
+[port-to-python-plan.md](./port-to-python-plan.md). Фронтенд, `spec/`, `e2e/`
+и агентные workflow не тронуты.
+
+Проверено локально после порта:
+
+- `npm run spec:build` — контракт компилируется, `docs/api/openapi.yaml` не менялся;
+- `cd backend && uv run pytest` — 58/58 (22 сценария из JS-набора + домен,
+  store, регресс-тест на гонку двойного бронирования);
+- `cd backend && uv run ruff check .` — чисто;
+- `cd frontend && npm run lint && npm run build && npm run build:demo` — без изменений;
+- `cd e2e && npm test` — 8/8, **без единой правки файлов e2e/tests** (реальная
+  сквозная приёмка порта: тот же браузерный UI против нового бэкенда);
+- Сборка `docker build .` не проверена в этой сессии (недоступен Docker-демон) —
+  проверить перед деплоем на Render.
+
+---
+
 ## Уже в продукте (из sprint11)
 
 - [x] Регистрация / аккаунты, публичная ссылка `/u/:slug`, несколько типов встреч
