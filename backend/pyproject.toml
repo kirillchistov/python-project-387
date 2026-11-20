@@ -1,0 +1,32 @@
+[project]
+name = "call-calendar-backend"
+version = "0.1.0"
+description = "Call Calendar API — бэкенд по контракту docs/api/openapi.yaml (порт с Fastify на FastAPI)"
+requires-python = ">=3.12"
+dependencies = [
+    "fastapi[standard]>=0.115",
+    "sqlalchemy>=2.0",
+    "alembic>=1.13",
+    "httpx>=0.27",
+    "babel>=2.15",
+    "pyyaml>=6.0",
+]
+
+[tool.uv]
+package = false
+
+[dependency-groups]
+dev = [
+    "pytest>=8.0",
+    "pytest-asyncio>=0.24",
+    "ruff>=0.6",
+    "datamodel-code-generator>=0.26",
+    "respx>=0.23.1",
+]
+
+[tool.ruff]
+line-length = 100
+target-version = "py312"
+
+[tool.pytest.ini_options]
+asyncio_mode = "auto"
