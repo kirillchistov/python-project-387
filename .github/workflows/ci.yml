@@ -17,7 +17,8 @@ jobs:
       - uses: wagoid/commitlint-github-action@v6
 
   # Контракт — источник истины: проверяем, что openapi.yaml
-  # соответствует TypeSpec-исходникам и не правился руками.
+  # соответствует TypeSpec-исходникам и не правился руками, а Pydantic-модели
+  # бэкенда (backend/app/api/schemas/generated.py) — самому openapi.yaml.
   contract:
     runs-on: ubuntu-latest
     steps:
@@ -30,19 +31,24 @@ jobs:
       - run: npm run spec:build
       - name: Contract is up to date
         run: git diff --exit-code docs/api/openapi.yaml
+      - uses: astral-sh/setup-uv@v3
+      - run: uv sync --frozen
+        working-directory: backend
+      - run: ./scripts/generate_schemas.sh
+        working-directory: backend
+      - name: Generated Pydantic schemas are up to date
+        run: git diff --exit-code backend/app/api/schemas/generated.py
 
   backend-tests:
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v4
-      - uses: actions/setup-node@v4
-        with:
-          node-version: 22
-          cache: npm
-          cache-dependency-path: backend/package-lock.json
-      - run: npm ci
+      - uses: astral-sh/setup-uv@v3
+      - run: uv sync --frozen
         working-directory: backend
-      - run: npm test
+      - run: uv run pytest
+        working-directory: backend
+      - run: uv run ruff check .
         working-directory: backend
 
   frontend-build:
@@ -89,16 +95,16 @@ jobs:
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v4
+      - uses: astral-sh/setup-uv@v3
+      - run: uv sync --frozen
+        working-directory: backend
       - uses: actions/setup-node@v4
         with:
           node-version: 22
           cache: npm
           cache-dependency-path: |
-            backend/package-lock.json
             frontend/package-lock.json
             e2e/package-lock.json
-      - run: npm ci
-        working-directory: backend
       - run: npm ci
         working-directory: frontend
       - run: npm ci

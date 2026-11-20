@@ -1,4 +1,4 @@
-# Один образ: Fastify-бэкенд отдаёт API и собранный фронтенд.
+# Один образ: FastAPI-бэкенд отдаёт API и собранный фронтенд.
 # Приложение слушает порт из переменной окружения PORT (по умолчанию 5001).
 
 # --- Сборка фронтенда ------------------------------------------------------
@@ -9,29 +9,29 @@ RUN npm ci
 COPY frontend/ ./
 RUN npm run build
 
-# --- Сборка зависимостей бэкенда (toolchain для better-sqlite3) ------------
-FROM node:22-alpine AS backend-deps
-RUN apk add --no-cache python3 make g++
+# --- Сборка зависимостей бэкенда --------------------------------------------
+FROM python:3.12-slim AS backend-deps
+RUN pip install --no-cache-dir uv
 WORKDIR /build/backend
-COPY backend/package.json backend/package-lock.json ./
-RUN npm ci --omit=dev
+COPY backend/pyproject.toml backend/uv.lock ./
+RUN uv sync --frozen --no-dev
 
-# --- Продакшен-образ -------------------------------------------------------
-FROM node:22-alpine
-ENV NODE_ENV=production
+# --- Продакшен-образ ---------------------------------------------------------
+FROM python:3.12-slim
+ENV PYTHONUNBUFFERED=1
 WORKDIR /app
 
-COPY --from=backend-deps /build/backend/node_modules backend/node_modules
-COPY backend/package.json backend/package-lock.json backend/
-
-# Контракт нужен бэкенду в рантайме: из него загружаются схемы валидации
-COPY docs/api/openapi.yaml docs/api/openapi.yaml
-COPY backend/src backend/src
+COPY --from=backend-deps /build/backend/.venv backend/.venv
+COPY backend/app backend/app
+COPY backend/migrations backend/migrations
+COPY backend/alembic.ini backend/alembic.ini
 COPY --from=frontend /build/frontend/dist public
 
 ENV STATIC_DIR=/app/public
 ENV DATABASE_PATH=/app/data/call-calendar.sqlite
+ENV PATH="/app/backend/.venv/bin:${PATH}"
 RUN mkdir -p /app/data
 EXPOSE 5001
 
-CMD ["node", "backend/src/index.js"]
+WORKDIR /app/backend
+CMD uvicorn app.main:app --host 0.0.0.0 --port ${PORT:-5001}

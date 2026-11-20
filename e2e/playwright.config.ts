@@ -1,7 +1,7 @@
 import { defineConfig, devices } from '@playwright/test';
 
 /**
- * E2E-тесты гоняются против реального стека: Fastify-бэкенд (SQLite :memory:)
+ * E2E-тесты гоняются против реального стека: FastAPI-бэкенд (SQLite :memory:)
  * и Vite dev-сервер фронтенда поднимаются автоматически (webServer).
  * Бэкенд один на весь прогон, поэтому тесты выполняются последовательно
  * (workers: 1) и используют уникальные данные, чтобы не мешать друг другу.
@@ -20,7 +20,8 @@ export default defineConfig({
   projects: [{ name: 'chromium', use: { ...devices['Desktop Chrome'] } }],
   webServer: [
     {
-      command: 'npm --prefix ../backend start',
+      command: 'uv run uvicorn app.main:app --host 0.0.0.0 --port 5001',
+      cwd: '../backend',
       url: 'http://localhost:5001/api/public/kirill',
       reuseExistingServer: !process.env.CI,
       timeout: 30_000,
