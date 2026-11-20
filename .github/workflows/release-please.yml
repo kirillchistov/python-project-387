@@ -1,11 +1,11 @@
-# Автоматизация релизов: release-please анализирует Conventional Commits
-# в main и поддерживает release-PR с changelog и новой semver-версией.
-# Мёрдж release-PR создаёт GitHub Release и тег.
+# Пауза: release-please с release-type: node оставлен от JS-проекта.
+# На push в main не запускается. Conventional Commits по-прежнему
+# проверяет commitlint в ci.yml. Вернуть авторелизы — снова on.push.branches: [main].
+# Ручной запуск: Actions → release-please → Run workflow.
 name: release-please
 
 on:
-  push:
-    branches: [main]
+  workflow_dispatch:
 
 permissions:
   contents: write

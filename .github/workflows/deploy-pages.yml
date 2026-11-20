@@ -1,10 +1,10 @@
-# Деплой демо-версии фронтенда на GitHub Pages.
-# Демо-сборка (VITE_DEMO=true) эмулирует API прямо в браузере — бэкенд не нужен.
+# Пауза: деплой демо на GitHub Pages отложен. На push в main не запускается.
+# Сборка (npm run build:demo во frontend/) от языка бэкенда не зависит.
+# Вернуть автодеплой — снова on.push.branches: [main].
+# Ручной запуск: Actions → Deploy demo to GitHub Pages → Run workflow.
 name: Deploy demo to GitHub Pages
 
 on:
-  push:
-    branches: [main]
   workflow_dispatch:
 
 permissions:
